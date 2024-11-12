@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.contrib.auth.password_validation import MinimumLengthValidator
 from django.db import models
 
 from recipes.constants import (MAX_EMAIL_LENGTH, MAX_FIRST_NAME_LENGTH,
@@ -10,14 +9,6 @@ from recipes.constants import (MAX_EMAIL_LENGTH, MAX_FIRST_NAME_LENGTH,
 
 class User(AbstractUser):
     """Модель пользователя."""
-
-    password = models.CharField(
-        max_length=MAX_PASSWORD_LENGTH,
-        validators=[
-            MinimumLengthValidator
-        ],
-        verbose_name='Пароль'
-    )
     email = models.EmailField(
         max_length=MAX_EMAIL_LENGTH,
         unique=True,

@@ -30,7 +30,6 @@ class UserSignupReadSerializer(serializers.ModelSerializer):
 
 class UserSignupWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для создания объектов пользователя при регистрации."""
-    password = serializers.CharField(min_length=MIN_PASSWORD_LENGTH)
 
     class Meta:
         model = User
@@ -41,6 +40,10 @@ class UserSignupWriteSerializer(serializers.ModelSerializer):
             'last_name',
             'password'
         )
+
+    def validate_password(self, value):
+        if not validate_password(value):
+            return value
 
     def create(self, validated_data):
         user = User(
@@ -95,7 +98,6 @@ class AvatarChangeSerializer(serializers.Serializer):
 class PasswordChangeSerializer(serializers.Serializer):
     """Сериализатор для изменения пароля у объекта пользователя."""
     new_password = serializers.CharField(max_length=MAX_PASSWORD_LENGTH,
-                                         min_length=MIN_PASSWORD_LENGTH,
                                          label='Новый пароль')
     current_password = serializers.CharField(max_length=MAX_PASSWORD_LENGTH,
                                              label='Текущий пароль')
@@ -110,6 +112,10 @@ class PasswordChangeSerializer(serializers.Serializer):
         if not self.context['request'].user.check_password(value):
             raise serializers.ValidationError('Неправильный текущий пароль!')
         return value
+
+    def validate_new_password(self, value):
+        if not validate_password(value):
+            return value
 
     def change_password(self, instance, validated_data):
         instance.set_password(validated_data['new_password'])
