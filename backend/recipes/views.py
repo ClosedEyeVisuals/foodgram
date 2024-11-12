@@ -13,4 +13,4 @@ class ShortUrlRedirectView(SingleObjectMixin, RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         recipe = self.get_object()
-        return f'/api/recipes/{recipe.id}/'
+        return f'/recipes/{recipe.id}/'
