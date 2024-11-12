@@ -40,9 +40,6 @@ const About = ({ updateOrders, orders }) => {
             <p className={styles.textItem}>
               Код проекта находится тут - <a href="https://github.com/ClosedEyeVisuals/foodgram" className={styles.textLink}>Github</a>
             </p>
-            <p className={styles.textItem}>
-              Автор проекта: <a href="https://github.com/ClosedEyeVisuals/" className={styles.textLink}>Имя Автора</a>
-            </p>
           </div>
         </aside>
       </div>

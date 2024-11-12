@@ -6,8 +6,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.fields import Base64ImageField
-from recipes.constants import (MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH,
-                               SHORT_URL_LENGTH, SHORT_URL_SYMBOLS)
+from recipes.constants import (MAX_PASSWORD_LENGTH, SHORT_URL_LENGTH,
+                               SHORT_URL_SYMBOLS)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from users.models import Follow
@@ -79,9 +79,9 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context['request']
         return (
-            request.user.is_authenticated and
-            Follow.objects.filter(user=request.user,
-                                  following=obj).exists()
+            request.user.is_authenticated
+            and Follow.objects.filter(user=request.user,
+                                      following=obj).exists()
         )
 
 
@@ -287,16 +287,16 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         request = self.context['request']
         return (
-                request.user.is_authenticated and
-                Favorite.objects.filter(user=request.user,
+            request.user.is_authenticated
+            and Favorite.objects.filter(user=request.user,
                                         recipe=obj).exists()
         )
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context['request']
         return (
-                request.user.is_authenticated and
-                ShoppingCart.objects.filter(user=request.user,
+            request.user.is_authenticated
+            and ShoppingCart.objects.filter(user=request.user,
                                             recipe=obj).exists()
         )
 

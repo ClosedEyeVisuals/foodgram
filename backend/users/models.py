@@ -3,8 +3,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
 from recipes.constants import (MAX_EMAIL_LENGTH, MAX_FIRST_NAME_LENGTH,
-                               MAX_LAST_NAME_LENGTH, MAX_PASSWORD_LENGTH,
-                               MAX_USERNAME_LENGTH)
+                               MAX_LAST_NAME_LENGTH, MAX_USERNAME_LENGTH)
 
 
 class User(AbstractUser):

@@ -135,10 +135,7 @@ class RecipeViewSet(ModelViewSet):
         return super().get_permissions()
 
     def get_serializer_class(self):
-        if (
-                self.action == 'create' or
-                self.action == 'partial_update'
-        ):
+        if self.action == 'create' or self.action == 'partial_update':
             return RecipeWriteSerializer
         elif self.action == 'favorite':
             return FavoriteWriteSerializer
@@ -193,7 +190,7 @@ class RecipeViewSet(ModelViewSet):
             )
         response = HttpResponse(shopping_list, content_type='text/plain')
         response['Content-Disposition'] = (
-            f'attachment; filename="{user.username}`s_shopping_list.txt"'
+            f'attachment; filename=f"{user.username}`s_shopping_list.txt"'
         )
         return response
 
