@@ -1,14 +1,23 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.contrib.auth.password_validation import MinimumLengthValidator
 from django.db import models
 
 from recipes.constants import (MAX_EMAIL_LENGTH, MAX_FIRST_NAME_LENGTH,
-                               MAX_LAST_NAME_LENGTH, MAX_USERNAME_LENGTH)
+                               MAX_LAST_NAME_LENGTH, MAX_PASSWORD_LENGTH,
+                               MAX_USERNAME_LENGTH)
 
 
 class User(AbstractUser):
     """Модель пользователя."""
 
+    password = models.CharField(
+        max_length=MAX_PASSWORD_LENGTH,
+        validators=[
+            MinimumLengthValidator
+        ],
+        verbose_name='Пароль'
+    )
     email = models.EmailField(
         max_length=MAX_EMAIL_LENGTH,
         unique=True,
@@ -17,7 +26,7 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=MAX_USERNAME_LENGTH,
         unique=True,
-        help_text='Максимальное кол-во символов: 150.',
+        help_text=f'Максимальное кол-во символов: {MAX_USERNAME_LENGTH}.',
         validators=[
             UnicodeUsernameValidator()
         ],
@@ -51,10 +60,18 @@ class User(AbstractUser):
 
 class Follow(models.Model):
     """Модель подписки одного пользователя на другого."""
-    user = models.ForeignKey(User, related_name='follows',
-                             on_delete=models.CASCADE)
-    following = models.ForeignKey(User, related_name='followers',
-                                  on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        related_name='follows',
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь'
+    )
+    following = models.ForeignKey(
+        User,
+        related_name='followers',
+        on_delete=models.CASCADE,
+        verbose_name='Подписан на'
+    )
 
     class Meta:
         constraints = [

@@ -1,14 +1,15 @@
 import random
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.fields import Base64ImageField
-from recipes.constants import (MAX_PASSWORD_LENGTH, SHORT_URL_LENGTH,
-                               SHORT_URL_SYMBOLS)
+from recipes.constants import (MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH,
+                               SHORT_URL_LENGTH, SHORT_URL_SYMBOLS)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            Tag, ShoppingCart)
+                            ShoppingCart, Tag)
 from users.models import Follow
 
 User = get_user_model()
@@ -29,6 +30,8 @@ class UserSignupReadSerializer(serializers.ModelSerializer):
 
 class UserSignupWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для создания объектов пользователя при регистрации."""
+    password = serializers.CharField(min_length=MIN_PASSWORD_LENGTH)
+
     class Meta:
         model = User
         fields = (
@@ -92,6 +95,7 @@ class AvatarChangeSerializer(serializers.Serializer):
 class PasswordChangeSerializer(serializers.Serializer):
     """Сериализатор для изменения пароля у объекта пользователя."""
     new_password = serializers.CharField(max_length=MAX_PASSWORD_LENGTH,
+                                         min_length=MIN_PASSWORD_LENGTH,
                                          label='Новый пароль')
     current_password = serializers.CharField(max_length=MAX_PASSWORD_LENGTH,
                                              label='Текущий пароль')

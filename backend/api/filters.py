@@ -7,6 +7,7 @@ from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientFilter(FilterSet):
+    """Класс, реализующий фильтрацию при получении ингредиентов."""
     name = CharFilter(lookup_expr='istartswith')
 
     class Meta:

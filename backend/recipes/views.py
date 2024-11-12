@@ -6,6 +6,9 @@ from recipes.models import Recipe
 
 
 class ShortUrlRedirectView(SingleObjectMixin, RedirectView):
+    """
+    Представление для переадресации пользователя, используя короткую ссылку.
+    """
     queryset = Recipe.objects.all()
 
     def get_object(self, queryset=None):

@@ -4,8 +4,8 @@ from django.db import models
 
 from recipes.constants import (
     MAX_INGREDIENT_NAME_LENGTH, MAX_INGREDIENT_MEASUREMENT_UNIT_LENGTH,
-    MIN_INGREDIENT_AMOUNT, MAX_RECIPE_NAME_LENGTH, MAX_RECIPE_SHORT_URL_LENGTH,
-    MIN_RECIPE_COOKING_TIME, MAX_TAG_NAME_LENGTH, MAX_TAG_SLUG_LENGTH
+    MAX_RECIPE_NAME_LENGTH, MAX_RECIPE_SHORT_URL_LENGTH, MAX_TAG_NAME_LENGTH,
+    MAX_TAG_SLUG_LENGTH, MIN_INGREDIENT_AMOUNT, MIN_RECIPE_COOKING_TIME
 )
 
 User = get_user_model()
@@ -13,16 +13,21 @@ User = get_user_model()
 
 class Tag(models.Model):
     """Модель тега."""
-    name = models.CharField(max_length=MAX_TAG_NAME_LENGTH,
-                            unique=True,
-                            verbose_name='Название')
-    slug = models.SlugField(max_length=MAX_TAG_SLUG_LENGTH,
-                            unique=True,
-                            verbose_name='Идентификатор',
-                            help_text='Символы латиницы, цифры, подчёркивание',
-                            validators=[
-                                RegexValidator(regex='^[-a-zA-Z0-9_]+$')
-                            ])
+    name = models.CharField(
+        max_length=MAX_TAG_NAME_LENGTH,
+        unique=True,
+        help_text=f'Максимальное кол-во символов: {MAX_TAG_NAME_LENGTH}.',
+        verbose_name='Название'
+    )
+    slug = models.SlugField(
+        max_length=MAX_TAG_SLUG_LENGTH,
+        unique=True,
+        verbose_name='Идентификатор',
+        help_text='Символы латиницы, цифры, дефис, подчёркивание.',
+        validators=[
+            RegexValidator(regex='^[-a-zA-Z0-9_]+$')
+        ]
+    )
 
     class Meta:
         verbose_name = 'тег'
@@ -63,12 +68,13 @@ class Recipe(models.Model):
     """Модель рецепта."""
     name = models.CharField(
         max_length=MAX_RECIPE_NAME_LENGTH,
+        help_text=f'Максимальное кол-во символов: {MAX_RECIPE_NAME_LENGTH}.',
         verbose_name='Название'
     )
     text = models.TextField('Описание')
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        help_text='Укажите время в минутах',
+        help_text='Укажите время в минутах.',
         validators=[MinValueValidator(MIN_RECIPE_COOKING_TIME)]
     )
     image = models.ImageField(
@@ -153,7 +159,7 @@ class FavoriteAndShoppingCartModel(models.Model):
 class Favorite(FavoriteAndShoppingCartModel):
     """Модель добавления рецепта пользователем в избранное."""
     class Meta:
-        verbose_name = 'в избранное'
+        verbose_name = 'избранное'
         verbose_name_plural = 'Избранное'
         default_related_name = 'favorites'
         ordering = ('user', 'recipe')
@@ -168,7 +174,7 @@ class Favorite(FavoriteAndShoppingCartModel):
 class ShoppingCart(FavoriteAndShoppingCartModel):
     """Модель добавления рецепта пользователем в список покупок."""
     class Meta:
-        verbose_name = 'в список покупок'
+        verbose_name = 'список покупок'
         verbose_name_plural = 'Список покупок'
         default_related_name = 'shopping_cart'
         ordering = ('user', 'recipe')

@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 
 
 class RecipeIngredientInLine(admin.TabularInline):
@@ -17,7 +18,7 @@ class RecipeAdmin(admin.ModelAdmin):
     )
     search_fields = (
         'author__username',
-        'name',
+        'name'
     )
     list_filter = ('tags',)
     filter_horizontal = ('tags',)
@@ -34,6 +35,9 @@ class TagAdmin(admin.ModelAdmin):
         'name',
         'slug'
     )
+    search_fields = (
+        'name',
+    )
 
 
 class IngredientAdmin(admin.ModelAdmin):
@@ -46,9 +50,15 @@ class IngredientAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Favorite)
+class FavoriteAndShoppingCartAdmin(admin.ModelAdmin):
+    search_fields = (
+        'user__username',
+        'recipe__name'
+    )
+
+
+admin.site.register(Favorite, FavoriteAndShoppingCartAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(ShoppingCart)
-
+admin.site.register(ShoppingCart, FavoriteAndShoppingCartAdmin)
