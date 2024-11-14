@@ -140,5 +140,4 @@ dmypy.json
 
 static/
 media/
-/backend/data/
 /infra/
