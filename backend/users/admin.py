@@ -1,9 +1,15 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group
 
-from .models import Follow, User
+from users.models import Follow
+
+User = get_user_model()
 
 
-class UserAdmin(admin.ModelAdmin):
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
     list_display = (
         'username',
         'email',
@@ -16,6 +22,7 @@ class UserAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     search_fields = (
         'user__username',
@@ -23,5 +30,4 @@ class FollowAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Follow, FollowAdmin)
-admin.site.register(User, UserAdmin)
+admin.site.unregister(Group)

@@ -2,8 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from recipes.constants import (MAX_EMAIL_LENGTH, MAX_FIRST_NAME_LENGTH,
-                               MAX_LAST_NAME_LENGTH, MAX_USERNAME_LENGTH)
+from users.constants import (MAX_EMAIL_LENGTH, MAX_FIRST_NAME_LENGTH,
+                             MAX_LAST_NAME_LENGTH, MAX_USERNAME_LENGTH)
 
 
 class User(AbstractUser):
@@ -39,10 +39,13 @@ class User(AbstractUser):
         verbose_name='Аватар'
     )
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('id',)
+        ordering = ('username',)
 
     def __str__(self):
         return self.username
@@ -76,7 +79,7 @@ class Follow(models.Model):
         ]
         verbose_name = 'подписка'
         verbose_name_plural = 'Подписки'
-        ordering = ('-id',)
+        ordering = ('user__username', 'following__username')
 
     def __str__(self):
         return f'{self.user} - {self.following}'

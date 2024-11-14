@@ -1,11 +1,15 @@
+import random
+
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from recipes.constants import (
-    MAX_INGREDIENT_NAME_LENGTH, MAX_INGREDIENT_MEASUREMENT_UNIT_LENGTH,
-    MAX_RECIPE_NAME_LENGTH, MAX_RECIPE_SHORT_URL_LENGTH, MAX_TAG_NAME_LENGTH,
-    MAX_TAG_SLUG_LENGTH, MIN_INGREDIENT_AMOUNT, MIN_RECIPE_COOKING_TIME
+    MAX_AVAILABLE_VALUE, MAX_INGREDIENT_NAME_LENGTH,
+    MAX_INGREDIENT_MEASUREMENT_UNIT_LENGTH, MAX_RECIPE_NAME_LENGTH,
+    MAX_RECIPE_SHORT_URL_LENGTH, MAX_TAG_NAME_LENGTH, MAX_TAG_SLUG_LENGTH,
+    MIN_INGREDIENT_AMOUNT, MIN_RECIPE_COOKING_TIME, SHORT_URL_LENGTH,
+    SHORT_URL_SYMBOLS
 )
 
 User = get_user_model()
@@ -24,15 +28,12 @@ class Tag(models.Model):
         unique=True,
         verbose_name='Идентификатор',
         help_text='Символы латиницы, цифры, дефис, подчёркивание.',
-        validators=[
-            RegexValidator(regex='^[-a-zA-Z0-9_]+$')
-        ]
     )
 
     class Meta:
         verbose_name = 'тег'
         verbose_name_plural = 'Теги'
-        ordering = ('id',)
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -75,7 +76,8 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
         help_text='Укажите время в минутах.',
-        validators=[MinValueValidator(MIN_RECIPE_COOKING_TIME)]
+        validators=[MinValueValidator(MIN_RECIPE_COOKING_TIME),
+                    MaxValueValidator(MAX_AVAILABLE_VALUE)]
     )
     image = models.ImageField(
         upload_to='recipes/images/',
@@ -96,15 +98,33 @@ class Recipe(models.Model):
     short_url = models.SlugField(
         max_length=MAX_RECIPE_SHORT_URL_LENGTH,
         verbose_name='Короткая ссылка',
-        unique=True,
-        blank=True,
-        null=True
+        unique=True
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+
+    @staticmethod
+    def generate_short_url():
+        while True:
+            url = str.join('', random.choices(SHORT_URL_SYMBOLS,
+                                              k=SHORT_URL_LENGTH))
+            if not Recipe.objects.filter(short_url=url).exists():
+                break
+        return url
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.short_url:
+            self.short_url = self.generate_short_url()
+
+        return super().save(force_insert, force_update, using, update_fields)
 
     class Meta:
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('-id',)
+        ordering = ('-created_at', 'name')
 
     def __str__(self):
         return self.name
@@ -125,7 +145,8 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Кол-во',
-        validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT)]
+        validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT),
+                    MaxValueValidator(MAX_AVAILABLE_VALUE)]
     )
 
     class Meta:
@@ -151,6 +172,13 @@ class FavoriteAndShoppingCartModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('user', 'recipe')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_user_%(class)s'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} - {self.recipe}'
@@ -158,29 +186,15 @@ class FavoriteAndShoppingCartModel(models.Model):
 
 class Favorite(FavoriteAndShoppingCartModel):
     """Модель добавления рецепта пользователем в избранное."""
-    class Meta:
+    class Meta(FavoriteAndShoppingCartModel.Meta):
         verbose_name = 'избранное'
         verbose_name_plural = 'Избранное'
         default_related_name = 'favorites'
-        ordering = ('user', 'recipe')
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='unique_user_favorite'
-            )
-        ]
 
 
 class ShoppingCart(FavoriteAndShoppingCartModel):
     """Модель добавления рецепта пользователем в список покупок."""
-    class Meta:
+    class Meta(FavoriteAndShoppingCartModel.Meta):
         verbose_name = 'список покупок'
         verbose_name_plural = 'Список покупок'
         default_related_name = 'shopping_cart'
-        ordering = ('user', 'recipe')
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='unique_user_shoppingcart'
-            )
-        ]

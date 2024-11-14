@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
@@ -25,9 +26,14 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = (RecipeIngredientInLine,)
     empty_value_display = 'Не задано'
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.annotate(in_favorites_count=Count('favorites'))
+        return queryset
+
     @admin.decorators.display(description='В избранном')
-    def in_favorites_count(self, recipe):
-        return recipe.favorites.count()
+    def in_favorites_count(self, obj):
+        return obj.in_favorites_count
 
 
 class TagAdmin(admin.ModelAdmin):

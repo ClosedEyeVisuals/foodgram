@@ -20,7 +20,7 @@
 
 1. Форкнуть репозиторий и клонировать его на локальную машину
 ```
-git clone git@github.com:{username}/foodgram.git
+git clone git@github.com:ClosedEyeVisuals/foodgram.git
 ```
 2. Создать в корневой директории файл .env и заполнить его по примеру
 
@@ -40,6 +40,10 @@ sudo docker compose exec backend cp -r /app/collected_static/. /backend_static/s
 - Создать суперпользователя
 ```
 sudo docker compose exec -it backend python manage.py createsuperuser
+```
+- При желании можно заполнить базу данных ингредиентами:
+```
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_ingredients
 ```
 4. После разработки остановить проект
 ```

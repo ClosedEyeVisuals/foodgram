@@ -1,6 +1,5 @@
 from django_filters.rest_framework import (
     BooleanFilter, CharFilter, FilterSet, ModelMultipleChoiceFilter,
-    NumberFilter
 )
 
 from recipes.models import Ingredient, Recipe, Tag
@@ -17,7 +16,6 @@ class IngredientFilter(FilterSet):
 
 class RecipeFilter(FilterSet):
     """Класс, реализующий фильтрацию при получении объектов рецепта."""
-    author = NumberFilter(field_name='author__id', label='id автора')
     tags = ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
