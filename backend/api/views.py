@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -92,11 +91,7 @@ class UserViewSet(DjoserUserViewSet):
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
-        subs = User.objects.annotate(
-            recipes_count=Count('recipes')
-        ).filter(
-            followers__user=self.request.user
-        )
+        subs = User.objects.filter(followers__user=self.request.user)
         page = self.paginate_queryset(subs)
         serializer = SubscriptionSerializer(
             page,
@@ -111,6 +106,7 @@ class RecipeViewSet(ModelViewSet):
     Вьюсет для выполнения операций чтения/создания/изменения/удаления
     объектов рецепта и добавление их в избранное или список покупок.
     """
+    queryset = Recipe.objects.all()
     pagination_class = LimitPagination
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -118,25 +114,14 @@ class RecipeViewSet(ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_queryset(self):
-        return Recipe.objects.annotate(
-            is_favorited=Exists(
-                Favorite.objects.filter(
-                    recipe=OuterRef('pk'),
-                    user=self.request.user.is_authenticated
-                    and self.request.user
-                )
-            ),
-            is_in_shopping_cart=Exists(
-                ShoppingCart.objects.filter(
-                    recipe=OuterRef('pk'),
-                    user=self.request.user.is_authenticated
-                    and self.request.user
-                )
-            ),
-        )
+        queryset = super().get_queryset()
+        user = self.request.user
+        if user.is_authenticated:
+            return queryset.favorite_and_shopping_cart_annotate(user=user)
+        return queryset
 
     def get_serializer_class(self):
-        if self.action == 'create' or self.action == 'partial_update':
+        if self.action in ('create', 'partial_update'):
             return RecipeWriteSerializer
         return RecipeReadSerializer
 

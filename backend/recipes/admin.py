@@ -10,6 +10,7 @@ class RecipeIngredientInLine(admin.TabularInline):
     extra = 0
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -36,6 +37,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return obj.in_favorites_count
 
 
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -46,6 +48,7 @@ class TagAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -56,15 +59,9 @@ class IngredientAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Favorite, ShoppingCart)
 class FavoriteAndShoppingCartAdmin(admin.ModelAdmin):
     search_fields = (
         'user__username',
         'recipe__name'
     )
-
-
-admin.site.register(Favorite, FavoriteAndShoppingCartAdmin)
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Tag, TagAdmin)
-admin.site.register(ShoppingCart, FavoriteAndShoppingCartAdmin)

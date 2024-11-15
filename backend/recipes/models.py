@@ -65,6 +65,28 @@ class Ingredient(models.Model):
         return self.name
 
 
+class RecipeQuerySet(models.QuerySet):
+    def favorite_and_shopping_cart_annotate(self, user):
+        """
+        Метод, позволяющий добавить к объекту аннотированные поля
+        с помощью подзапросов.
+        """
+        return self.annotate(
+            is_favorited=models.Exists(
+                Favorite.objects.filter(
+                    recipe=models.OuterRef('pk'),
+                    user=user
+                )
+            ),
+            is_in_shopping_cart=models.Exists(
+                ShoppingCart.objects.filter(
+                    recipe=models.OuterRef('pk'),
+                    user=user
+                )
+            ),
+        )
+
+
 class Recipe(models.Model):
     """Модель рецепта."""
     name = models.CharField(
@@ -104,6 +126,7 @@ class Recipe(models.Model):
         auto_now_add=True,
         verbose_name='Дата создания'
     )
+    objects = RecipeQuerySet.as_manager()
 
     @staticmethod
     def generate_short_url():
@@ -111,8 +134,7 @@ class Recipe(models.Model):
             url = str.join('', random.choices(SHORT_URL_SYMBOLS,
                                               k=SHORT_URL_LENGTH))
             if not Recipe.objects.filter(short_url=url).exists():
-                break
-        return url
+                return url
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
